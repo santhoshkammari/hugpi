@@ -12,4 +12,4 @@ class ToolUseBlock(BaseModel):
 
     name: str
 
-    type: Literal["tool_use"]
+    type: Literal["tool_use","tool_result"]

@@ -1,3 +1,5 @@
+from typing_extensions import Literal
+
 MODELS_TYPE = Literal[ 'meta-llama/Meta-Llama-3.1-70B-Instruct',
     'CohereForAI/c4ai-command-r-plus-08-2024',
     'Qwen/Qwen2.5-72B-Instruct',
