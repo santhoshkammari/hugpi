@@ -1,0 +1,12 @@
+Metadata-Version: 2.1
+Name: hugpi
+Version: 0.1.1
+Summary: A LangChain integration for HuggingChat models
+Author-email: Kammari santhosh <your.email@example.com>
+Project-URL: Homepage, https://github.com/yourusername
+Project-URL: Bug Tracker, https://github.com/yourusername
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
