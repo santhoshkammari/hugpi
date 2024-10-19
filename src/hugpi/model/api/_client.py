@@ -7,7 +7,7 @@ class HUGPIClient:
     def __init__(
             self,
             model:MODELS_TYPE = 'nvidia/Llama-3.1-Nemotron-70B-Instruct-HF',
-            api_key:str = 'backupsanthosh1@gmail.com_SK99@pass',
+            api_key:str|None = None,
             cookie_dir_path: str = "./cookies/",
             save_cookies: bool = True
     ):
