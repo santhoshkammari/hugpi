@@ -1,4 +1,4 @@
-from . import resources
+from .resources.messages import Messages
 from ._models import HUGPiLLM
 from .types._model_types import MODELS_TYPE
 from ..utils.const import AVAILABLE_MODEL_LIST
@@ -20,5 +20,5 @@ class HUGPIClient:
             save_cookies=save_cookies,
             default_llm=default_llm_index
         )
-        self.messages = resources.Messages(self.llm)
+        self.messages = Messages(self.llm)
 

@@ -1,10 +1,11 @@
 import json
+from typing import Callable
 
 from typing_extensions import Iterable
 
 from transformers.utils import get_json_schema
 
-from src.hugpi.model.api.types.tool_param import ToolParam
+from .types.tool_param import ToolParam
 
 
 class ToolPrepare:
@@ -56,21 +57,33 @@ class ToolPrepare:
         return INSTRUCTION
 
     @staticmethod
-    def _transformers_prepare_tool_prompt(tools: Iterable[ToolParam]) -> str:
+    def _default_tool_schema_func(tools):
         available_tools = ""
         for tool in tools:
-            available_tools+="\n"
-            if isinstance(tool,dict):
-                available_tools+=json.dumps({"type":"function","function":tool})
+            available_tools += "\n"
+            if isinstance(tool, dict):
+                available_tools += json.dumps({"type": "function", "function": tool})
             elif callable(tool):
-                available_tools+=json.dumps(get_json_schema(tool))
+                available_tools += json.dumps(get_json_schema(tool))
+        return available_tools
 
-        INSTRUCTIONS = """You also have ability of function calling. You are provided with function signatures within <tools></tools> XML tags. You may call one or more functions to assist with the user query. Don't make assumptions about what values to plug into functions. 
-Here are the available tools: <tools> {available_tools}
-For each function call return a json object with function name and arguments within <tool_call></tool_call> XML tags as follows:
-<tool_call>
-{{"name": <function-name>, "arguments": <args-dict>}}
-</tool_call>
-        """
-        INSTRUCTIONS = INSTRUCTIONS.format(available_tools=available_tools)
-        return INSTRUCTIONS
+    @staticmethod
+    def _transformers_prepare_tool_prompt(tools: Iterable[ToolParam],
+                                          tool_prompt: str | None = None,
+                                          tool_schema_func: Callable | None = None,
+                                          ) -> str:
+        tool_schema_func = ToolPrepare._default_tool_schema_func if tool_schema_func is None else tool_schema_func
+        tools = tool_schema_func(tools)
+
+        if tool_prompt is None:
+            tool_prompt = """You also have ability of function calling. You are provided with function signatures within <tools></tools> XML tags. You may call one or more functions to assist with the user query. Don't make assumptions about what values to plug into functions. 
+    Here are the available tools: <tools> {tools}
+    For each function call return a json object with function name and arguments within <tool_call></tool_call> XML tags as follows:
+    <tool_call>
+    {"name": <function-name>, "arguments": <args-dict>}
+    </tool_call>
+    example:
+    <tool_call>{"name": "addition", "arguments":{"x": 1, "y":2}</tool_call>
+    <tool_call>{"name": "sum_of_ages", "arguments":{"p1_age":10,"p2_age":20}</tool_call>
+            """
+        return tool_prompt.replace("{tools}",tools)

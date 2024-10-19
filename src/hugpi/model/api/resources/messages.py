@@ -1,7 +1,7 @@
 import uuid
 import json
 import re
-from typing import Union, Dict, List, Generator, Iterable
+from typing import Union, Dict, List, Generator, Iterable, Callable
 
 from langchain_core.utils import print_text
 
@@ -33,22 +33,30 @@ class Messages:
             prompt: str | None = None,
             messages: List[Dict[str, Union[str, int, float]]] | None = None,
             tools: Iterable[ToolParam] | None = None,
+            tool_prompt:str| None = None,
+            tool_schema_func: Callable | None= None,
+            tool_parse_func: Callable | None= None,
+            tool_execute_func: Callable | None= None,
             stream: bool = False,
             conversation: bool = False,
             **kwargs
     ) -> Message | Generator:
+        self.tool_parse_func = tool_parse_func
+        self.tool_execute_func = tool_execute_func
         if tools:
             self.tools = tools
-            self.tool_prompt = ToolPrepare._transformers_prepare_tool_prompt(tools)
+            self.tool_prompt = ToolPrepare._transformers_prepare_tool_prompt(tools,
+                                                                             tool_prompt = tool_prompt,
+                                                                             tool_schema_func=tool_schema_func)
         if kwargs.get("debug",False):
-            logger.debug(f"System Prompt: {self.system_prompt}")
-            logger.debug(f"User Prompt: {prompt or messages}")
-            logger.debug(f"Tools: {self.tools}")
-            logger.debug(f"Max Tokens: {max_tokens}")
-            logger.debug(f"Model: {model}")
-            logger.debug(f"Stream: {stream}")
-            logger.debug(f"Conversation: {conversation}")
-            logger.debug(f"kwargs: {kwargs}")
+            print(f"System Prompt: {self.system_prompt}")
+            print(f"User Prompt: {prompt or messages}")
+            print(f"Tools: {self.tools}")
+            print(f"Max Tokens: {max_tokens}")
+            print(f"Model: {model}")
+            print(f"Stream: {stream}")
+            print(f"Conversation: {conversation}")
+            print(f"kwargs: {kwargs}")
 
         if stream:
             return self.stream(model=model, messages=prompt or messages, conversation=conversation,
@@ -69,15 +77,19 @@ class Messages:
         return sp, up
 
     def _parse_tool_use(self, content: str) -> Dict[str, Union[str, Dict]]:
-        pattern = r"<tool_call>(.*)</tool_call>"
-        match = re.findall(pattern, content, re.DOTALL)
-        if match:
+        if 'tool_call' in content:
+            start,end = 0,len(content)
+            start_flag = True
+            for idx,ch in enumerate(content):
+                if ch=='{' and start_flag:
+                    start=idx
+                    start_flag=False
+                if ch=="}":
+                    end = idx+1
             try:
-                return json.loads(match[0].replace("\n", ""))
+                return json.loads(content[start:end])
             except json.JSONDecodeError:
-                logger.error(f"Invalid JSON in tool_call: {match}")
                 return {}
-        return {}
 
     def _execute_tool(self, tool_call: Dict[str, Union[str, Dict]]) -> str:
         tool_name = tool_call.get("name")
@@ -102,22 +114,22 @@ class Messages:
             response += value.content[0]["text"]
 
         if kwargs.get("debug", False):
-            logger.debug('########################')
-            logger.debug("### Invoke Response ###")
-            logger.debug(response)
-            logger.debug('########################')
+            print('########################')
+            print("### Invoke Response ###")
+            print(response)
+            print('########################')
 
-        tool_call = self._parse_tool_use(response)
+        tool_call = self._parse_tool_use(response) if self.tool_parse_func is None else self.tool_parse_func(response)
 
         if kwargs.get("debug", False):
-            logger.debug("### tool_call Parsed ###")
-            logger.debug(json.dumps(tool_call, indent=4))
-            logger.debug('################')
+            print("### tool_call Parsed ###")
+            print(json.dumps(tool_call, indent=4))
+            print('################')
 
         usage = Usage(input_tokens=10, output_tokens=10)
 
         if tool_call:
-            results = self._execute_tool(tool_call)
+            results = self._execute_tool(tool_call) if self.tool_execute_func is None else self.tool_execute_func(tool_call)
             if results and tool_call.get("name") and tool_call.get("arguments"):
                 return  Message(
                     id=str(uuid.uuid4()),
@@ -125,7 +137,7 @@ class Messages:
                     content=[
                         {
                             "type": "tool_result",
-                            "tool_use_id": f"tool_{str(uuid.uuid4)}",
+                            "tool_use_id": f"tool_{str(uuid.uuid4())}",
                             "content":results
                         }
                     ],
