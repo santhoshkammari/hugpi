@@ -9,7 +9,8 @@ class HUGPIClient:
             model:MODELS_TYPE = 'nvidia/Llama-3.1-Nemotron-70B-Instruct-HF',
             api_key:str|None = None,
             cookie_dir_path: str = "./cookies/",
-            save_cookies: bool = True
+            save_cookies: bool = True,
+            system_prompt:str = ""
     ):
         _hf_email,_hf_password = api_key.split("@gmail.com_")
         default_llm_index = AVAILABLE_MODEL_LIST.index(model)
@@ -18,7 +19,8 @@ class HUGPIClient:
             hf_password=_hf_password,
             cookie_dir_path=cookie_dir_path,
             save_cookies=save_cookies,
-            default_llm=default_llm_index
+            default_llm=default_llm_index,
+            system_prompt=system_prompt
         )
         self.messages = Messages(self.llm)
 

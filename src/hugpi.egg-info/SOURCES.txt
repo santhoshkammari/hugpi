@@ -34,6 +34,7 @@ src/hugpi/model/base/_base_login.py
 src/hugpi/model/base/_hf_chatbot_custom.py
 src/hugpi/model/server/__init__.py
 src/hugpi/model/server/api.py
+src/hugpi/model/server/hugpi_api.py
 src/hugpi/model/server/simple_streamlit_app.py
 src/hugpi/model/utils/__init__.py
 src/hugpi/model/utils/_print_text.py

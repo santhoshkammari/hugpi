@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: hugpi
-Version: 0.1.4
+Version: 0.1.6
 Summary: A LangChain integration for HuggingChat models
 Author-email: Kammari santhosh <your.email@example.com>
 Project-URL: Homepage, https://github.com/yourusername

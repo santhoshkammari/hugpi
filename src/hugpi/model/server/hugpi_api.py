@@ -21,11 +21,13 @@ Claude follows this information in all languages, and always responds to the use
 """
 app = FastAPI()
 
+from hugpi import HUGPIClient
+from hugpi.features import HugpiInternetExplorer
+
+client  = HUGPIClient(api_key="backupsanthosh1@gmail.com_SK99@pass",
+                      system_prompt = CLAUDE_SYSTEM_PROMPT)
+internet_explorer = HugpiInternetExplorer(client=client)
 # Initialize the HuggyLLM instance
-huggy_llm = HuggyLLM(
-    model_name="nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",  # Replace with your default model
-    system_prompt=CLAUDE_SYSTEM_PROMPT
-)
 class Message(BaseModel):
     role: str
     content: str
@@ -41,6 +43,7 @@ class GenerateRequest(BaseModel):
     model: Optional[str] = None
     conversation: Optional[bool] = False
     stream: Optional[bool] = False
+    websearch: Optional[bool] = False
 
 @app.post("/v1/chat")
 async def chat(request: ChatRequest):
@@ -48,12 +51,12 @@ async def chat(request: ChatRequest):
         messages = [msg.dict() for msg in request.messages]
         if request.stream:
             return StreamingResponse(
-                stream_chatbot_response(request.prompt, request.model, request.conversation),
+                stream_chatbot_response(request),
                 media_type="text/event-stream"
             )
         else:
-            response = huggy_llm.invoke(messages, model_name=request.model, conversation=request.conversation)
-            return {"message": {"content": response}}
+            response = client.messages.create(messages, model_name=request.model, conversation=request.conversation)
+            return {"message": {"content": response.content[0]["text"]}}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -63,18 +66,24 @@ async def generate(request: GenerateRequest):
     try:
         if request.stream:
             return StreamingResponse(
-                stream_chatbot_response(request.prompt, request.model, request.conversation),
+                stream_chatbot_response(request),
                 media_type="text/event-stream"
             )
         else:
-            response = huggy_llm.invoke(request.prompt, model_name=request.model, conversation=request.conversation)
-            return {"message": {"content": response}}
+            response = client.messages.create(request.prompt, model_name=request.model, conversation=request.conversation)
+            return {"message": {"content": response.content[0]["text"]}}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def stream_chatbot_response(prompt, model, conversation):
-    for chunk in huggy_llm.stream(prompt, model_name=model, conversation=conversation):
-        yield chunk
+async def stream_chatbot_response(request:GenerateRequest):
+    if request.websearch:
+        for c in internet_explorer.answer_query(request.prompt,stream=True):
+            yield c.content[0]["text"]
+            await asyncio.sleep(0)  # Allow other tasks to run
+
+    for chunk in client.messages.create(messages=request.prompt, model_name=request.model, conversation=request.conversation,
+                                        stream=True):
+        yield chunk.content[0]['text']
         await asyncio.sleep(0)  # Allow other tasks to run
 
 def serve():

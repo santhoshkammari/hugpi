@@ -2,11 +2,13 @@ import streamlit as st
 import requests
 from typing import Generator
 
-def get_api_response(prompt, stream=True, conversation=False, url="http://0.0.0.0:11435/v1/generate") -> Generator:
+def get_api_response(prompt, stream=True, conversation=False, url="http://0.0.0.0:11435/v1/generate",
+                     web_search = False) -> Generator:
     data = {
         "prompt": prompt,
         "stream": stream,
-        "conversation": conversation
+        "conversation": conversation,
+        "websearch":web_search
     }
     response = requests.post(url, json=data, stream=stream)
     for chunk in response.iter_content(decode_unicode=True):
@@ -27,6 +29,8 @@ def streamlit_app():
         st.session_state.messages = []
     if 'conversation_mode' not in st.session_state:
         st.session_state.conversation_mode = True
+    if 'web_search' not in st.session_state:
+        st.session_state.web_search = False
 
     # Display chat messages
     with chat_container:
@@ -44,7 +48,8 @@ def streamlit_app():
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
                 full_response = ""
-                for chunk in get_api_response(prompt, conversation=st.session_state.conversation_mode):
+                for chunk in get_api_response(prompt, conversation=st.session_state.conversation_mode,
+                                              web_search = st.session_state.web_search):
                     full_response += chunk
                     message_placeholder.markdown(full_response + "▌")
                 message_placeholder.markdown(full_response)
