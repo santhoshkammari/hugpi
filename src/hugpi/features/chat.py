@@ -7,9 +7,9 @@ from phi.model.response import ModelResponse
 from phi.tools.function import FunctionCall
 from phi.utils.timer import Timer
 from phi.utils.log import logger
-from .._client import HUGPIClient
-from ..types.tool_param import ToolParam
-from ..types._model_types import MODELS_TYPE
+from src.hugpi.model.api._client import HUGPIClient
+from src.hugpi.model.api.types.tool_param import ToolParam
+from src.hugpi.model.api.types._model_types import MODELS_TYPE
 
 class Metrics:
     def __init__(self):

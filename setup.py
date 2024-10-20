@@ -2,19 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name="hugpi",
-    version="0.1.7",
-    packages=find_packages(where="src"),
+    version="0.1.8",  # Incremented the version number
     package_dir={"": "src"},
+    packages=find_packages(where="src"),
     install_requires=[
-        # List your core dependencies here
-        "numpy",
-        "pandas",
-    ],
-    extras_require={
-        "features": [
-            # List dependencies for the 'features' module here
-            "scikit-learn",
-            "matplotlib",
-        ],
-    },
+    ]
 )
