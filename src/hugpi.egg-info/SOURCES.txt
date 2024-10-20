@@ -5,6 +5,7 @@ src/hugpi/__init__.py
 src/hugpi.egg-info/PKG-INFO
 src/hugpi.egg-info/SOURCES.txt
 src/hugpi.egg-info/dependency_links.txt
+src/hugpi.egg-info/requires.txt
 src/hugpi.egg-info/top_level.txt
 src/hugpi/features/__init__.py
 src/hugpi/features/internet_explorer.py

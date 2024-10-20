@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: hugpi
-Version: 0.1.6
+Version: 0.1.7
 Summary: A LangChain integration for HuggingChat models
 Author-email: Kammari santhosh <your.email@example.com>
 Project-URL: Homepage, https://github.com/yourusername
@@ -10,6 +10,13 @@ Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
+Requires-Dist: langchain_core
+Requires-Dist: pydantict
+Requires-Dist: transformers
+Requires-Dist: hugchat
+Provides-Extra: features
+Requires-Dist: scikit-learn; extra == "features"
+Requires-Dist: matplotlib; extra == "features"
 
 # HUGPI: Unleash the Power of Large Language Models 🚀
 

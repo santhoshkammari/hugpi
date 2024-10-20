@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hugpi"
-version= "0.1.6"
+version= "0.1.7"
 authors = [
   { name="Kammari santhosh", email="your.email@example.com" },
 ]
@@ -18,6 +18,10 @@ classifiers = [
 ]
 
 dependencies = [
+    "langchain_core",
+    "pydantict",
+    "transformers",
+    "hugchat"
 ]
 [project.urls]
 "Homepage" = "https://github.com/yourusername"
