@@ -179,7 +179,7 @@ class HugpiInternetExplorer:
     def _sequential_summarize_results(self, query: str, results: List[Tuple[str, str, float]]) -> List[str]:
         summarized_data = []
         start_time = time.time()
-        for url, content, score in results:
+        for url, content, score in tqdm(results,desc="Summarizing",unit="url"):
             summary = self._process_api_url((url,content,score,query))
             summarized_data.append(summary)
         end_time = time.time()
