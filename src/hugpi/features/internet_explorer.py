@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class HugpiInternetExplorer:
     def __init__(self, model_name: MODELS_TYPE = 'nvidia/Llama-3.1-Nemotron-70B-Instruct-HF',
-                 api_key: str=None,
+                 api_key: str='backupsanthosh1@gmail.com_SK99@pass',
                  client = None,
                  debug = False):
         ## check for apikey or client
@@ -159,7 +159,7 @@ class HugpiInternetExplorer:
             print(f"Error processing {url}: {str(e)}")
             return None
 
-    def _summarize_results(self, query: str, results: List[Tuple[str, str, float]]) -> List[str]:
+    def _parallel_summarize_results(self, query: str, results: List[Tuple[str, str, float]]) -> List[str]:
         summarized_data = []
         start_time = time.time()
         with ThreadPoolExecutor(max_workers=10) as executor:
@@ -173,15 +173,25 @@ class HugpiInternetExplorer:
                 except Exception as e:
                     print(f"Error processing {url}: {str(e)}")
         end_time = time.time()
-        logger.debug(f"Summarization time: {end_time - start_time:.2f} seconds")
+        logger.debug(f"ParallelSummarization time: {end_time - start_time:.2f} seconds")
         return summarized_data
 
-    def answer_query(self, query: str,max_urls:int=4,chunk_size:int=1000,**kwargs) -> Message:
+    def _sequential_summarize_results(self, query: str, results: List[Tuple[str, str, float]]) -> List[str]:
+        summarized_data = []
+        start_time = time.time()
+        for url, content, score in results:
+            summary = self._process_api_url((url,content,score,query))
+            summarized_data.append(summary)
+        end_time = time.time()
+        logger.debug(f"SequentialSummarization time: {end_time - start_time:.2f} seconds")
+        return summarized_data
+
+    def answer_query(self, query: str,max_urls:int=4,chunk_size:int=1000,fast = False,**kwargs) -> Message:
         results = self._get_results(query,max_urls=max_urls,
                                     chunk_size=chunk_size)
-        summarized_data = self._summarize_results(query, results)
+        summarized_data = self._sequential_summarize_results(query, results) if fast else self._sequential_summarize_results(query, results)
         summarized_data = "\n".join(summarized_data)
-        return self.client.messages.create(messages=[
+        for chunk in self.client.messages.create(messages=[
             {
                 "role": "system",
                 "content": "Answer the following question based on the realtime data"
@@ -190,7 +200,17 @@ class HugpiInternetExplorer:
                 "role": "user",
                 "content": f"<real_time_data>{summarized_data}</real_time_data>\n<query>{query}</query>"
             }
-        ], **kwargs)
+        ], **kwargs):
+            yield chunk.content[0]["text"]
+
+    def print_answer_query(self, query: str,max_urls:int=4,chunk_size:int=1000,fast = False,**kwargs):
+        for _ in self.answer_query(
+            query, max_urls=max_urls,
+            chunk_size=chunk_size,
+            stream = True,
+            fast=fast
+        ):
+            print(_,end = "",flush=True)
 
 # Example usage
 

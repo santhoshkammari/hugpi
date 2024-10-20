@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hugpi-features"
-version= "0.2.1"
+version= "0.2.4"
 authors = [
   { name="Kammari santhosh", email="your.email@example.com" },
 ]
@@ -24,7 +24,8 @@ dependencies = [
     "hugchat",
     "lxml_html_clean",
     "pyqt5",
-    "pyopengenai"
+    "pyopengenai",
+    "phidata"
 ]
 [project.urls]
 "Homepage" = "https://github.com/yourusername"
