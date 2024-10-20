@@ -3,7 +3,6 @@ import asyncio
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Union
-from langchain_huggy import HuggyLLM
 from fastapi.responses import StreamingResponse
 
 CLAUDE_SYSTEM_PROMPT = """

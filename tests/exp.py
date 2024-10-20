@@ -2,7 +2,6 @@ import time
 
 from src.hugpi import HUGPIClient
 from src.hugpi.features import HugpiInternetExplorer
-
 if __name__ == '__main__':
     start_time = time.time()
     client = HUGPIClient(api_key="backupsanthosh1@gmail.com_SK99@pass")
